@@ -1,6 +1,6 @@
 # Computer Vision for _FIRST_ Robotics
 
-![AA](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\AA.png)
+![AA](assets\AA.png)
 
 
 ### Aims
@@ -32,17 +32,18 @@ None…?
 
 ### What is Computer Vision?
 
-![1560329040581](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\1560329040581.png)
+![Computer vision example 1](assets\1560329040581.png)
 
 One of the main ways humans can tell what’s happening around them is through sight, and it’s one of the most useful (but difficult) tools for a computer to use. Robotics in particular relies heavily on vision to interact appropriately with the world.
 
-![1560329054326](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\1560329054326.png)
+![Computer vision example 2](assets\1560329054326.png)
 
 Specifically, Computer Vision is a discipline within computer science which concerns itself with algorithms to derive meaning from camera inputs, and includes powerful techniques like image classification (understanding what’s in a photo), photogrammetry (constructing 3d scenes from multiple images), facial recognition, and many more.
 
+
 #### What is OpenCV?
 
-![1560329069586](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\1560329069586.png)In the same way that engineers use off-the-shelf parts rather than machining them from scratch, programmers use pre-built libraries to shortcut the difficult task of implementing tools from scratch. OpenCV is a publicly available library designed to make computer vision quick and easy, and is both well documented and heavily used. OpenCV is available with C++, Python and Java bindings, but for this tutorial we will be using Python, since it makes very simple code.
+![OpenCV and Python](assets\1560329069586.png)In the same way that engineers use off-the-shelf parts rather than machining them from scratch, programmers use pre-built libraries to shortcut the difficult task of implementing tools from scratch. OpenCV is a publicly available library designed to make computer vision quick and easy, and is both well documented and heavily used. OpenCV is available with C++, Python and Java bindings, but for this tutorial we will be using Python, since it makes very simple code.
 
 Throughout this tutorial, you can find more information on any topic in the footnotes, or do your own search - some great resources can be found in the [opencv python tutorials](https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_tutorials.html)
 
@@ -76,7 +77,7 @@ Throughout this tutorial, you will see prompts to help you keep up your git repo
 
 To start with, go to [https://github.com/new](https://github.com/new) and either sign in to github (if you have an account) or create a new account. Github is a free online code hosting platform which is extremely handy for programmers. Once you’ve signed in, you should see the below screen; make sure you give it a good name, description and tick the box for a README, then click “Create repository”.
 
-![1560328920215](assets\1560328920215.png)
+![Create a repo!](assets\1560328920215.png)
 
 Once you’ve created your repository online, you want to create a local copy where you can edit your code. To interact with Git locally, you have to install Git on your computer; just go to [https://git-scm.com/book/en/v2/Getting-Started-Installing-Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) and follow the instructions for your operating system. You’ll then have access to terminal commands for interacting with git - on Windows, this is called “git bash”, while on Linux and Mac you can type these commands directly into the terminal.
 
@@ -227,7 +228,7 @@ git push
 
 > ### Sidenote!
 > One thing you need to wrap your head around is how Python sees your image.
-> The image below demonstrates how the image is represented digitally - it’s stored as a matrix of 8 bit integers (0-255, whole numbers) which represent the brightness of each point in the image (pixel).  ![img](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\pasted image 0.png)
+> The image below demonstrates how the image is represented digitally - it’s stored as a matrix of 8 bit integers (0-255, whole numbers) which represent the brightness of each point in the image (pixel).  ![img](assets\pasted image 0.png)
 >
 > It gets a little bit more complicated for colour images, but not much - instead of a single number, each pixel is then represented by a triplet of 8 bit integers, e.g. (255, 0, 127).  Each number represents the brightness of one component of colour in that pixel.  By default, OpenCV uses BGR colour format, which means the first number represents Blue, the second represents Green and the third represents Red.  What colour does the example triplet represent?
 
@@ -336,7 +337,7 @@ def GrayscaleToBGR(gray):
 main.py
 
 
-![img](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\pasted image 0-1560333812393.png)
+![img](assets\pasted image 0-1560333812393.png)
 
 What's the point of doing this?  Just to get some practice manipulating images in OpenCV.  Later we'll see other colour spaces that are more useful.
 
@@ -374,7 +375,7 @@ What's happening here?
 
 This uses a very simple approach for ROI extraction; we simply define a variable called `ret` which gets all the data from `frame`, but only between rows 200 and 450, and columns 20 to 800. 
 
-![img](C:\Users\fredr\OneDrive\Documents\Tutorials\assets\pasted image 0-1560335029941.png)
+![img](assets\pasted image 0-1560335029941.png)
 
 Obviously, this is a very simple approach, and it can work very well.  However, there are two potential issues for our use case:
 
