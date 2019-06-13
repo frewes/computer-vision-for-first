@@ -344,16 +344,21 @@ What's the point of doing this?  Just to get some practice manipulating images i
 ```git
 git add main.py
 git commit -m"Added grayscale and annotations"
+git push
 ```
 
 ## Region of Interest
 
 The video we're using includes a lot of content which is not useful to us - tracking the people in the background won't help calculate the score!
 
-However, the camera is fixed, so the part of the image we care about (i.e. the field) is always in the same place.  So, what we can do is define a so-called <abbr title="Region (or Rectangle) of Interest">ROI</abbr>.  By doing this, we can tell OpenCV which part of the image we care about.
+However, the camera is fixed, so the part of the image we care about (i.e. the field) is always in the same place.  So, what we can do is define a so-called <abbr title="Region (or Rectangle) of Interest">ROI</abbr>[^roi].  By doing this, we can tell OpenCV which part of the image we care about.
 
-> If you were using this for a robot
-
+<div class="alert info" markdown='1'>
+    <strong>How could I use this for robotics?</strong>
+	<p>
+		Onboard cameras can often see things that aren't helpful (e.g. parts of the robot).  By defining an ROI, you can ignore such things safely.
+    </p>
+</div>
 ### Rectangular
 
 ```python
@@ -386,7 +391,310 @@ The solution to this problem is to use a more complex shape for the contour.
 
 ### Concave
 
+We define a complex ROI using a _contour_ - in this case, a boundary around the field.  In OpenCV, a contour is defined by a list of _vertices_ that fall on the perimeter of the shape you wish to define.  Add the following function to your code to see how it works:
 
+```python
+def isolateField(frame):
+   mask = np.zeros(frame.shape, dtype=np.uint8)
+   roi_corners = np.array([[(0,200), (800,200), (850, 455), (20,450)]])
+   cv2.fillPoly(mask, roi_corners, (255,255,255))
+   #cv2.imshow('mask',mask) # If you want to see what the mask looks like...
+   #cv2.waitKey(0)
+   ret = cv2.bitwise_and(frame, mask)
+   return ret
+```
+
+main.py
+
+* `mask=np.zeros(...)` creates a black picture with the same shape as the original frame. 
+* `roi_corners = np.array([[...]])` defines a two-dimensional "numpy array"; what we're actually creating is a list of contours, where each contour is a list of points.
+* `cv2.fillPoly` fills the given shapes with the given colour; in this case, we fill the entire shape with white, creating a black-and-white mask image.  Try using `cv2.imshow` to see what this mask looks like.
+* `cv2.bitwise_and(frame,mask)` creates a new image such that every black pixel in `mask` stays black, while every white pixel becomes the same colour as the corresponding pixel in `frame`.
+
+If you set up the `processFrame` function correctly, you should get the following output:
+
+![img](assets/pasted%20image%200-1560412414775.png)
+
+Now, have a play with the vertices of the contour to improve the shape of the ROI; you can add as many points as you want to cut out undesirable sections of the input frame.
+
+**NOTE**: When defining corner points, you have to make sure they're defined in order, or you can end up with some really weird results:
+
+![img](assets\pasted image 0-1560418486502.png)
+
+
+
+```git
+git add main.py
+git commit -m"Added a ROI mask"
+git push
+```
+
+
+
+## Colour segmentation
+
+Now, in order to count scoring events during the match, we have to know where the game elements are.  In this case, there are two types - blue and red balls.  One of the ways we can find them is to do "colour segmentation[^colour]" - extract only the red or blue parts of the image.
+
+### RGB segmentation
+
+The most common representation of colour you'll find is the RGB colour space.  This colour space is linear and three-dimensional, as shown below. 
+
+![Threshold_inRange_RGB_colorspace.jpg](assets\Threshold_inRange_RGB_colorspace.jpg)
+
+In this space, we can identify a particular shade by defining a volume within this cube, which is pretty straightforward if you're looking for one of the three primary colours. 
+
+In this case, if we want the blue component to be high (e.g. 200-255) but the other two should be low (< 200).  This will capture mostly colours which are mostly blue.  Remember also that in OpenCV, the default colour space is BGR, not RGB; the theory is the same though!
+
+We'll implement this in a similar way to the concave ROI extraction: we'll create a black-and-white mask image and do a `bitwise_and`.  However, the format of the `bitwise_and` operation is slightly different this time.
+
+```python
+def findBlue(frame):
+   lower = np.array([200,0,0])
+   upper = np.array([255,200,200])
+   mask = cv2.inRange(frame, lower, upper)
+   ret = cv2.bitwise_and(frame, frame, mask=mask)
+   return ret
+```
+
+main.py
+
+`lower` and `upper` are opposite corners of a rectangular prism within the RGB cube.  When we put these values into `cv2.inRange`, we create a mask the same shape as `frame`, with all pixels in the defined range as white and everything else as black.
+
+Make sure you add the `findBlue` function to `processFrame` to see an output like the one below; feel free to play with the values to get a cleaner output.
+
+![img](assets\pasted image 0-1560413944360.png)
+
+There are some issues with this approach - for instance, dark blue is actually represented with values outside our threshold (e.g. 0,0,100 is a dark blue).  Defining a robust threshold in the RGB space can be very difficult. 
+
+### HSV Segmentation
+
+There are other colour spaces which are easier to work with than RGB; a very common one is <abbr title="Hue, Saturation, Value">HSV</abbr>.  Unlike the RGB colour space, the HSV space is cylindrical, though it too can represent all possible colours.  It's also composed of three separate values:
+
+* **Hue** represents the colour's position on the rainbow.
+* **Saturation** represents how intense the colour is.
+* **Value** represents the brightness of the colour.
+
+![Threshold_inRange_HSV_colorspace.jpg](assets\Threshold_inRange_HSV_colorspace.jpg)
+
+Hopefully, this diagram illustrates how you can identify a particular colour; by taking a slice from this cylinder, you can represent any shade of "blue" including bright, light or dark.
+
+In this case, we can get a decent blue value using the values (80,100,0) and (120,255,255) as lower and upper thresholds respectively.
+
+To implement this in your `findBlue` function, all you have to do is convert the frame to the HSV colour space, in the same way we converted to grayscale earlier:
+
+```python
+hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+```
+
+main.py (findBlue)
+
+Remember you also have to reference `hsv` in the `inRange` function to create the mask.
+
+![img](assets\pasted image 0-1560416938590.png)
+
+Notice how the result of `findBlue` in HSV is a little cleaner and more accurately captures blue shades.  Of course, you can get RGB thresholding to work just as well, but HSV typically makes it easier to pick out a particular colour.  Feel free to use either method moving forward.
+
+There is one issue with using the HSV space, as you'll find if you try to make a corresponding `findRed` function: red shades span the "break" in the cylinder; some red shades are defined from `hue = 0` up, while others are defined up to `hue = 255`.
+
+So, in this case, we have to create two separate masks and combine them:
+
+  ```python
+def findRed(frame):
+   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+   lower = np.array([0,100,0])
+   upper = np.array([10,255,255])
+   mask1 = cv2.inRange(hsv, lower, upper)
+   lower = np.array([180,100,0])
+   upper = np.array([255,255,255])
+   mask2 = cv2.inRange(hsv, lower, upper)
+   mask = mask1 + mask2
+   ret = cv2.bitwise_and(frame, frame, mask=mask)
+   return ret
+  ```
+
+main.py
+
+As you can see, you can combine separate masks just by addition, if they're the same shape and number format.
+
+One thing to notice as well is that `bitwise_and` uses `frame` rather than `hsv`; this is because the `imshow` function used later expects a BGR format - if you return an HSV image, you'll notice the colours look strange.
+
+![img](assets\pasted image 0-1560417270052.png)
+
+```git
+git add main.py
+git commit -m"Added colour segmentation"
+git push
+```
+
+### Morphological operators
+
+One thing that you might notice about the colour masks is that the shapes are a little spotty.  By playing with the threshold values, you may be able to improve them; however, there are a few other methods we can use, called _morphological operators_[^morph].
+
+One operator is called **erode**; as the name suggests, it chips away at the mask.  This can be great for getting rid of "noise" (small bits of mask you don't want).
+
+```python
+def erode(frame, size, iter):
+   kernel = np.ones((size,size),np.uint8)
+   return cv2.erode(frame,kernel,iterations = iter)
+```
+
+main.py
+
+The way morphological operators work is quite mathematically complex, but the key elements to control are those defined in the function:
+
+* `iter` controls how many times the erosion is performed, and
+* `size` controls how much is eroded each time
+
+Test out what happens to your mask when you run `erode` on it with different values!
+
+Another operator is called **dilate**, and it's the opposite of erosion - it grows the mask, filling out holes in shapes and smoothing things.
+
+```python
+def dilate(frame, size, iter):
+   kernel = np.ones((size,size),np.uint8)
+   return cv2.dilate(frame,kernel,iterations = iter)
+```
+
+main.py
+
+By combining these two operations, we can achieve even more useful behaviours.  A morphological **open** is defined by erosion followed by dilation, and removes noise without shrinking non-noise objects.  A morphological **close** is a dilation followed by an erosion, and is used to close small holes inside objects.
+
+Test out any and all operators to improve the quality of your `findBlue` and `findRed` functions.  Keep in mind though that these operations only really make sense on binary images - if you try to run them on colour images you'll get some weird results.
+
+With some cleaning up using morphological operators, you can get a much cleaner image:
+
+![img](assets\pasted image 0-1560418544405.png)
+
+The above image was generated by combining multiple "find" functions:
+
+```python
+def processFrame(frame):
+   field = isolateField(frame)
+   red = findRed(field)
+   blue = findBlue(field)
+   return red+blue
+```
+
+main.py
+
+
+
+```git
+git add main.py
+git commit -m"Implemented morphological operators"
+git push
+```
+
+
+
+## Shapes
+
+Just extracting colours from an image is only a step in the process of locating particular objects; you also need to identify shapes with in the image.
+
+### Hough Transforms
+
+One useful tool for finding shapes (specifically, lines or circles) is the Hough Transform[^hough]. This is a mathematical construct which we can use to spot the balls after filtering them out:
+
+```python
+def findCircles(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1,20, param1=50,param2=15,minRadius=10,maxRadius=30)
+    listCirc = []
+    if circles is not None:
+        # loop over the (x, y) coordinates and radius of the circles
+        for (x, y, r) in circles:
+            # Check if circle is valid?
+            listCirc.append((x,y,r))
+    return listCirc
+
+def drawCircles(frame,circles):
+    ret = frame;
+    for (x,y,r) in circles:
+        cv2.circle(ret,(int(x),int(y)),int(r),(0,255,0),2)
+    return ret
+```
+
+main.py
+
+The `findCircles`  function defined above returns a list of all circles found in the frame, while the `drawCircles` function draws the circles on the frame so you can see them.
+
+The `cv2.HoughCircles(...)` function has a lot of parameters - try changing them and seeing if you can improve the circle detection.  Just keep in mind that this function only works on grayscale images.
+
+![img](assets\pasted image 0-1560419032018.png)
+
+Now, you should understand why we did all the ROI and colour segmentation work; if you run `HoughCircles` on the raw frame, you'll probably see something like this:
+
+![img](assets\pasted image 0-1560419081226.png)
+
+### Contours
+
+Earlier, we defined contours by manually listing out points; however, if you've created a mask image using techniques like colour segmentation, OpenCV can create contours automatically[^contours]:
+
+```python
+def findCirclesByContours(frame, ref):
+   gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+   _, thresh = cv2.threshold(gray,127,255,0)
+   contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+   ret = frame
+   cv2.drawContours(retVal, contours, -1, (0,255,0), 3)
+   return ret
+```
+
+
+
+Automated contour extraction only works on binary images, so we apply a `cv2.threshold` to turn a grayscale image into a binary one.  You can then use the `findContours` function to extract the outlines of all the white sections.
+
+![img](assets\pasted image 0-1560419297744.png)
+
+Finding raw contours is an incredibly useful technique because you can do a whole lot with them.  However, in this case we just want to find the ones that look like they represent circles.
+
+OpenCV defines a function called `minEnclosingCircle` which represents the smallest circle required to surround the entire contour.  One way we can check if a contour is round is to compare the area enclosed by the contour to the area of the enclosing circle.
+
+There are also thresholds on the size of the circle, since we know roughly how big the game elements are.
+
+```python
+def findCirclesByContours(frame):
+    gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
+    ret, thresh = cv2.threshold(gray,127,255,0)
+    contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    circles = []
+    for cnt in contours:
+        (x,y),radius = cv2.minEnclosingCircle(cnt)
+        center = (int(x),int(y))
+        areaCircle = radius * radius * 3.14159
+        areaContour = cv2.contourArea(cnt)
+        if areaContour / areaCircle > 0.5 and radius > 10 and radius < 20:
+            circles.append((x,y,radius))
+    return circles
+```
+
+main.py
+
+Can you think of any other ways to check if a contour is round?
+
+![img](assets\pasted image 0-1560419675891.png)
+
+
+
+```git
+git add main.py
+git commit -m"Detecting circles!"
+git push
+```
+
+
+
+# ** TO BE CONTINUED**
+
+
+
+
+
+[^roi]:  <https://stackoverflow.com/questions/51686454/creating-roi-mask-by-using-drawcontours-in-opencv>
+[^colour]:  <https://www.learnopencv.com/invisibility-cloak-using-color-detection-and-segmentation-with-opencv/>
+[^morph]: <https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_imgproc/py_morphological_ops/py_morphological_ops.html>
+[^hough]:  https://www.pyimagesearch.com/2014/07/21/detecting-circles-images-using-opencv-hough-circles/>
+[^contours]:  <https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_contours/py_contour_features/py_contour_features.html>
 
 
 
