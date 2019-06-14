@@ -11,8 +11,8 @@
 
 ### Resources
 *    [OpenCV tutorials](https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_tutorials.html)
-*  [PyCharm IDE](https://www.jetbrains.com/pycharm/) or OCVID (if ready)   
-*   Aerial Assist Final footage.
+*  Python IDE, e.g. PyCharm or VSCode
+*  Aerial Assist Final footage.
 
 ### Overview
 1.  Learn how to load and view images and frames from a video
@@ -93,9 +93,11 @@ git status
 
 One of the things you’ll need to follow this tutorial (of course) is the Python programming language. If you do not already have it on your computer, go to [https://www.python.org/downloads/](https://www.python.org/downloads/) and get the latest version.
 
-You can develop python code using any approach you could use to write a text file, but it’s a lot easier if you have an Integrated Development Environment (IDE) - this is a program which helps you write and run code easily. For python, there are many options for this, but I recommend Jetbrains PyCharm; you can get a free version from [https://www.jetbrains.com/pycharm/](https://www.jetbrains.com/pycharm/). Other IDEs that work include Microsoft Studio Code, Anaconda Spyder, or Python IDLE, and a quick google search will find a dozen more, so it’s easy to find one that suits your taste.
+You can develop python code using any approach you could use to write a text file, but it’s a lot easier if you have an Integrated Development Environment (IDE) - this is a program which helps you write and run code easily. For python, there are many options for this, but I recommend either [Jetbrains PyCharm](https://www.jetbrains.com/pycharm/) or Visual Studio Code; both have a free version.  Other IDEs that work include Wing, Spyder, Komodo, Atom, and IDLE, and a quick google search will find a dozen more, so it’s easy to find one that suits your taste.
 
-Open up your IDE and create a file called `main.py`; inside this file, type this line:
+If this is your first time using the IDE you've chosen, go through a "getting started" tutorial to familiarise yourself with the layout, and then come back here.  [VS Code](https://code.visualstudio.com/docs/python/python-tutorial) has one here, and PyCharm has one [here](https://www.jetbrains.com/help/pycharm/creating-and-running-your-first-python-project.html).
+
+Once you're ready, open up the folder you did the `git clone` into in your IDE.  This should create a new python project in that location, and you should see one file called "readme.md". Create a new file called `main.py`, and type this line inside the file:
 
 ```python
 print("Hello, Python!")
@@ -107,7 +109,7 @@ Then, use your IDE to run this file, and you should see the phrase appear in a c
 
 ### Add requirements
 
-The key feature of Python is the abundance of libraries available for development, including OpenCV.  In order to define and install the libraries we need here, create a file in your project directory called “requirements.txt”, and fill it with this content:
+The key feature of Python is the abundance of libraries available for development, including OpenCV.  To follow this tutorial through, you'll need to install two libraries.  In order to define and install the libraries we need, create a file in your project directory called “requirements.txt”, and fill it with this content:
 
 ```python
 python-opencv
@@ -115,7 +117,9 @@ numpy
 ```
 requirements.txt
 
-Most python IDEs have a way to handle this file; if you’re using PyCharm, go to <https://www.jetbrains.com/help/pycharm/managing-dependencies.html> and follow the instructions for how to load the libraries, otherwise google your IDE to find out how to handle the requirements file properly. 
+It's good practice to do something like this, so that if anyone else needs to use your source code, they don't have to guess at the requirements.  It's also possible to specify which version of each library you need to make things very easy in the future, but in this case we don't really need to worry about it.
+
+Most python IDEs have a way to handle this file.  If you're using VS Code, dependencies are installed using Python's "Pip" library manager; in the terminal, type `pip install -r requirements.txt` to install everything specified.  If you’re using PyCharm, go to <https://www.jetbrains.com/help/pycharm/managing-dependencies.html> and follow the instructions for how to load the libraries.  If you're using a different IDE, a quick Google search should show you what you need.
 
 ```git
 git status
