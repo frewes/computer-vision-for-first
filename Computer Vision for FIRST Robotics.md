@@ -85,7 +85,7 @@ Once you’ve created your repository online, you want to create a local copy wh
 git clone https://github.com/<username>/computer-vision-tutorial
 git status 
 ```
-> On windows, shift-rightclick in the directory you want the project in, and select “open git bash here”. ( Otherwise open the terminal and navigate to the directory ).
+> On windows, shift-rightclick in the directory you want the project in, and select “Git Bash Here”. ( Otherwise open the terminal and navigate to the directory ).
 > You run all git commands by typing “git” followed by a particular command -- type “git help” to see all of them. To understand them better, google is your friend!
 
 
@@ -93,7 +93,7 @@ git status
 
 One of the things you’ll need to follow this tutorial (of course) is the Python programming language. If you do not already have it on your computer, go to [https://www.python.org/downloads/](https://www.python.org/downloads/) and get the latest version.
 
-You can develop python code using any approach you could use to write a text file, but it’s a lot easier if you have an Integrated Development Environment (IDE) - this is a program which helps you write and run code easily. For python, there are many options for this, but I recommend either [Jetbrains PyCharm](https://www.jetbrains.com/pycharm/) or Visual Studio Code; both have a free version.  Other IDEs that work include Wing, Spyder, Komodo, Atom, and IDLE, and a quick google search will find a dozen more, so it’s easy to find one that suits your taste.
+You can develop python code using any approach you could use to write a text file, but it’s a lot easier if you have an Integrated Development Environment (IDE) - this is a program which helps you write and run code easily. For python, there are many options for this, but I recommend either [Visual Studio Code](https://code.visualstudio.com/) or [Jetbrains PyCharm](https://www.jetbrains.com/pycharm/); both are powerful editors and have a free version.  Other IDEs that work include Wing, Spyder, Komodo, Atom, and IDLE, and a quick google search will find a dozen more, so it’s easy to find one that suits your taste.
 
 If this is your first time using the IDE you've chosen, go through a "getting started" tutorial to familiarise yourself with the layout, and then come back here.  [VS Code](https://code.visualstudio.com/docs/python/python-tutorial) has one here, and PyCharm has one [here](https://www.jetbrains.com/help/pycharm/creating-and-running-your-first-python-project.html).
 
